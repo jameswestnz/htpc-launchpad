@@ -1,0 +1,59 @@
+version: '3.5'
+
+services:
+  transmission:
+    image: linuxserver/transmission:latest
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Pacific/Auckland
+      - USER=admin
+      - PASS=${TRANSMISSION_PASSWORD}
+    volumes:
+      - ./data/transmission:/config
+      - ${TRANSMISSION_DOWNLOAD_PATH}:/downloads
+    ports:
+      - 9091:9091
+      - 51413:51413
+      - 51413:51413/udp
+    restart: unless-stopped
+
+  jackett:
+    image: linuxserver/jackett:latest
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Pacific/Auckland
+    volumes:
+      - ./data/jackett:/config
+    ports:
+      - 9117:9117
+    restart: unless-stopped
+
+  sonarr:
+    image: linuxserver/sonarr:latest
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Pacific/Auckland
+    volumes:
+      - ./data/sonarr:/config
+      - ${SONARR_TV_PATH}:/tv
+      - ${TRANSMISSION_DOWNLOAD_PATH}:/downloads
+    ports:
+      - 8989:8989
+    restart: unless-stopped
+
+  radarr:
+    image: linuxserver/radarr:latest
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Pacific/Auckland
+    volumes:
+      - ./data/radarr:/config
+      - ${RADARR_MOVIES_PATH}:/movies
+      - ${TRANSMISSION_DOWNLOAD_PATH}:/downloads
+    ports:
+      - 7878:7878
+    restart: unless-stopped
