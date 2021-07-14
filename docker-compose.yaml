@@ -113,6 +113,7 @@ services:
       - --providers.docker.exposedbydefault=false
     ports:
       - ${TRAEFIK_HOST_PORT:-8000}:8000
+      - 8080:8080
     networks:
       default:
         ipv4_address: ${TRAEFIK_IP_ADDRESS:-172.50.0.1}

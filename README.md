@@ -23,9 +23,20 @@ If you only want to start specific services:
 docker compose up -d transmission sonarr
 ```
 
-# Tailscale
-## Access services
-### When connected to Tailscale
+# Accessing services
+## From the host machine
+Each service has their default ports exposed to the host, allowing each service to be accessed on a URL such as `http://localhost:{service-port}`.
+
+Below are an example of URLs using the default configuration:
+```sh
+http://localhost:9091 # transmission
+http://localhost:9117 # jackett
+http://localhost:8989 # sonarr
+http://localhost:7878 # radarr
+http://localhost:8080 # traefik
+```
+
+## When connected to Tailscale
 URLs are in the format of `http://{service-name}.{$TRAEFIK_IP_ADDRESS}.nip.io:{$TRAEFIK_HOST_PORT}`
 
 Below are an example of URLs using the default configuration:
