@@ -1,25 +1,29 @@
-version: '3.5'
-
 services:
   transmission:
-    image: linuxserver/transmission:latest
+    image: ghcr.io/linuxserver/transmission:latest
     environment:
       - PUID=1000
       - PGID=1000
       - TZ=Pacific/Auckland
       - USER=admin
-      - PASS=${TRANSMISSION_PASSWORD}
+      - PASS=${TRANSMISSION_PASSWORD:-}
+      - TRANSMISSION_WEB_HOME=/flood-for-transmission/
     volumes:
-      - ./data/transmission:/config
-      - ${TRANSMISSION_DOWNLOAD_PATH}:/downloads
+      - ./data/transmission/config:/config
+      - ${TRANSMISSION_DOWNLOAD_PATH:-./data/transmission/downloads}:/downloads
     ports:
       - 9091:9091
       - 51413:51413
       - 51413:51413/udp
     restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.transmission.loadbalancer.server.port=9091
+      - traefik.http.routers.transmission.rule=Host(`transmission.${TRAEFIK_IP_ADDRESS:-172.50.0.1}.nip.io`)
+      - traefik.http.routers.transmission.service=transmission
 
   jackett:
-    image: linuxserver/jackett:latest
+    image: ghcr.io/linuxserver/jackett:latest
     environment:
       - PUID=1000
       - PGID=1000
@@ -29,31 +33,104 @@ services:
     ports:
       - 9117:9117
     restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.jackett.loadbalancer.server.port=9117
+      - traefik.http.routers.jackett.rule=Host(`jackett.${TRAEFIK_IP_ADDRESS:-172.50.0.1}.nip.io`)
+      - traefik.http.routers.jackett.service=jackett
 
   sonarr:
-    image: linuxserver/sonarr:latest
+    image: ghcr.io/linuxserver/sonarr:latest
     environment:
       - PUID=1000
       - PGID=1000
       - TZ=Pacific/Auckland
     volumes:
-      - ./data/sonarr:/config
-      - ${SONARR_TV_PATH}:/tv
-      - ${TRANSMISSION_DOWNLOAD_PATH}:/downloads
+      - ./data/sonarr/config:/config
+      - ${SONARR_TV_PATH:-./data/sonarr/tv}:/tv
+      - ${TRANSMISSION_DOWNLOAD_PATH:-./data/transmission/downloads}:/downloads
     ports:
       - 8989:8989
     restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.sonarr.loadbalancer.server.port=8989
+      - traefik.http.routers.sonarr.rule=Host(`sonarr.${TRAEFIK_IP_ADDRESS:-172.50.0.1}.nip.io`)
+      - traefik.http.routers.sonarr.service=sonarr
 
   radarr:
-    image: linuxserver/radarr:latest
+    image: ghcr.io/linuxserver/radarr:latest
     environment:
       - PUID=1000
       - PGID=1000
       - TZ=Pacific/Auckland
     volumes:
-      - ./data/radarr:/config
-      - ${RADARR_MOVIES_PATH}:/movies
-      - ${TRANSMISSION_DOWNLOAD_PATH}:/downloads
+      - ./data/radarr/config:/config
+      - ${RADARR_MOVIES_PATH:-./data/radarr/movies}:/movies
+      - ${TRANSMISSION_DOWNLOAD_PATH:-./data/transmission/downloads}:/downloads
     ports:
       - 7878:7878
     restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.radarr.loadbalancer.server.port=7878
+      - traefik.http.routers.radarr.rule=Host(`radarr.${TRAEFIK_IP_ADDRESS:-172.50.0.1}.nip.io`)
+      - traefik.http.routers.radarr.service=radarr
+
+  tailscale:
+    image: fastandfearless/tailscale:fromsource-latest
+    sysctls:
+      - net.ipv4.ip_forward=1
+      - net.ipv6.conf.all.forwarding=1
+    entrypoint:
+      - sh
+      - -c
+      - |
+        #!/bin/sh
+        set -e
+
+        # Create the tun device path if required
+        if [ ! -d /dev/net ]; then mkdir /dev/net; fi
+        if [ ! -e /dev/net/tun ]; then  mknod /dev/net/tun c 10 200; fi
+
+        # Wait 5s for the daemon to start and then run tailscale up to configure
+        /bin/sh -c "sleep 5; tailscale up --authkey=${TAILSCALE_AUTH} --advertise-routes=${DOCKER_SUBNET:-172.50.0.0/24} --advertise-tags=${TAILSCALE_TAGS:-} --advertise-exit-node --hostname=${TAILSCALE_HOSTNAME:-htpc}" &
+        exec tailscaled --state=/var/run/tailscale/tailscaled.state
+    cap_add:
+      - net_admin
+    volumes:
+      - ./data/tailscale/config:/var/run/tailscale
+    restart: unless-stopped
+
+  traefik:
+    image: traefik:2.4
+    command:
+      - --accesslog.format=json
+      - --api.insecure=true
+      - --api.dashboard=true
+      - --entrypoints.web.address=:8000
+      - --providers.docker.endpoint=unix:///var/run/docker.sock
+      - --providers.docker.exposedbydefault=false
+    ports:
+      - 80:8000
+    networks:
+      default:
+        ipv4_address: ${TRAEFIK_IP_ADDRESS:-172.50.0.1}
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    cap_drop:
+      - all
+    cap_add:
+      - net_bind_service
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.traefik.rule=Host(`traefik.${TRAEFIK_IP_ADDRESS:-172.50.0.1}.nip.io`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))
+      - traefik.http.routers.traefik.service=api@internal
+
+networks:
+  default:
+    ipam:
+      driver: default
+      config:
+        - subnet: ${DOCKER_SUBNET:-172.50.0.0/24}

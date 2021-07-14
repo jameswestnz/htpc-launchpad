@@ -18,3 +18,14 @@ If you only want to start specific services:
 ```
 docker-compose up -d transmission sonarr
 ```
+
+## Tailscale
+### Start
+```
+docker compose up -d tailscale
+```
+
+### Auth
+```
+docker compose exec -- tailscale tailscale up -advertise-exit-node
+```

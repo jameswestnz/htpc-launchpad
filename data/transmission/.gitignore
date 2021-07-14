@@ -1,0 +1,8 @@
+*
+!config/
+config/*
+!config/.gitignore
+!downloads/
+downloads/*
+!downloads/.gitignore
+!.gitignore

@@ -1,0 +1,8 @@
+*
+!config/
+config/*
+!config/.gitignore
+!tv/
+tv/*
+!tv/.gitignore
+!.gitignore

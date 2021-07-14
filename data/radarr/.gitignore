@@ -1,0 +1,8 @@
+*
+!config/
+config/*
+!config/.gitignore
+!movies/
+movies/*
+!movies/.gitignore
+!.gitignore
