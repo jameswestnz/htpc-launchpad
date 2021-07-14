@@ -112,7 +112,7 @@ services:
       - --providers.docker.endpoint=unix:///var/run/docker.sock
       - --providers.docker.exposedbydefault=false
     ports:
-      - 80:8000
+      - ${TRAEFIK_HOST_PORT:-8000}:8000
     networks:
       default:
         ipv4_address: ${TRAEFIK_IP_ADDRESS:-172.50.0.1}
@@ -125,7 +125,7 @@ services:
       - net_bind_service
     labels:
       - traefik.enable=true
-      - traefik.http.routers.traefik.rule=Host(`traefik.${TRAEFIK_IP_ADDRESS:-172.50.0.1}.nip.io`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))
+      - traefik.http.routers.traefik.rule=Host(`traefik.${TRAEFIK_IP_ADDRESS:-172.50.0.1}.nip.io`)
       - traefik.http.routers.traefik.service=api@internal
 
 networks:
