@@ -3,8 +3,13 @@ Create a `.env` file in the root with the following values:
 
 ```sh
 TAILSCALE_AUTH= # Required. Configure here: https://login.tailscale.com/admin/settings/authkeys
-TRANSMISSION_PASSWORD= # Transmission password, required for sonarr/radarr
+TRANSMISSION_DOCKER_IMAGE= # Optional. set to `haugene/transmission-openvpn:latest` to use OpenVPN settings
+TRANSMISSION_PASSWORD= # Optional.
 TRANSMISSION_DOWNLOAD_PATH= # Optional, but recommended. Absolute path to download directory
+TRANSMISSION_OPENVPN_PROVIDER= # Optional. See here for more information: https://haugene.github.io/docker-transmission-openvpn/
+TRANSMISSION_OPENVPN_CONFIG= # Optional. See here for more information: https://haugene.github.io/docker-transmission-openvpn/
+TRANSMISSION_OPENVPN_USERNAME= # Optional. See here for more information: https://haugene.github.io/docker-transmission-openvpn/
+TRANSMISSION_OPENVPN_PASSWORD= # Optional. See here for more information: https://haugene.github.io/docker-transmission-openvpn/
 SONARR_TV_PATH= # Optional, but recommended. Absolute path to tv shows directory
 RADARR_MOVIES_PATH= # Optional, but recommended. Absolute path to movies directory
 DOCKER_SUBNET= # Optional. Defaults to 172.50.0.0/24, may conflict with existing networks

@@ -1,6 +1,6 @@
 services:
   transmission:
-    image: ghcr.io/linuxserver/transmission:latest
+    image: ${TRANSMISSION_DOCKER_IMAGE:-ghcr.io/linuxserver/transmission:latest}
     environment:
       - PUID=1000
       - PGID=1000
@@ -8,6 +8,13 @@ services:
       - USER=admin
       - PASS=${TRANSMISSION_PASSWORD:-}
       - TRANSMISSION_WEB_HOME=/flood-for-transmission/
+      - OPENVPN_PROVIDER=${TRANSMISSION_OPENVPN_PROVIDER:-}
+      - OPENVPN_CONFIG=${TRANSMISSION_OPENVPN_CONFIG:-}
+      - OPENVPN_USERNAME=${TRANSMISSION_OPENVPN_USERNAME:-}
+      - OPENVPN_PASSWORD=${TRANSMISSION_OPENVPN_PASSWORD:-}
+      - LOCAL_NETWORK=${DOCKER_SUBNET:-172.50.0.0/24}
+    cap_add:
+      - net_admin
     volumes:
       - ./data/transmission/config:/config
       - ${TRANSMISSION_DOWNLOAD_PATH:-./data/transmission/downloads}:/downloads
