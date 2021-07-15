@@ -7,17 +7,23 @@ services:
       - TZ=Pacific/Auckland
       - USER=admin
       - PASS=${TRANSMISSION_PASSWORD:-}
-      - TRANSMISSION_WEB_HOME=/flood-for-transmission/
-      - OPENVPN_PROVIDER=${TRANSMISSION_OPENVPN_PROVIDER:-}
-      - OPENVPN_CONFIG=${TRANSMISSION_OPENVPN_CONFIG:-}
-      - OPENVPN_USERNAME=${TRANSMISSION_OPENVPN_USERNAME:-}
-      - OPENVPN_PASSWORD=${TRANSMISSION_OPENVPN_PASSWORD:-}
-      - LOCAL_NETWORK=${DOCKER_SUBNET:-172.50.0.0/24}
+      - TRANSMISSION_WEB_HOME=/flood-for-transmission/ # required for linuxserver image
+      - TRANSMISSION_WEB_UI=flood-for-transmission # required for OpenVPN image
+      - OPENVPN_PROVIDER=${TRANSMISSION_OPENVPN_PROVIDER:-} # required for OpenVPN image
+      - OPENVPN_CONFIG=${TRANSMISSION_OPENVPN_CONFIG:-} # required for OpenVPN image
+      - OPENVPN_USERNAME=${TRANSMISSION_OPENVPN_USERNAME:-} # required for OpenVPN image
+      - OPENVPN_PASSWORD=${TRANSMISSION_OPENVPN_PASSWORD:-} # required for OpenVPN image
+      - LOCAL_NETWORK=${DOCKER_SUBNET:-172.50.0.0/24} # required for OpenVPN image
+      - TRANSMISSION_HOME=/config # required for OpenVPN image
+      - TRANSMISSION_DOWNLOAD_DIR=/downloads/complete # required for OpenVPN image
+      - TRANSMISSION_INCOMPLETE_DIR=/downloads/incomplete # required for OpenVPN image
+      - TRANSMISSION_WATCH_DIR=/watch # required for OpenVPN image
     cap_add:
       - net_admin
     volumes:
       - ./data/transmission/config:/config
       - ${TRANSMISSION_DOWNLOAD_PATH:-./data/transmission/downloads}:/downloads
+      - ${TRANSMISSION_WATCH_PATH:-./data/transmission/watch}:/watch
     ports:
       - 9091:9091
       - 51413:51413
@@ -36,7 +42,7 @@ services:
       - PGID=1000
       - TZ=Pacific/Auckland
     volumes:
-      - ./data/jackett:/config
+      - ./data/jackett/config:/config
     ports:
       - 9117:9117
     restart: unless-stopped

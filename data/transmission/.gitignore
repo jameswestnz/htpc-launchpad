@@ -5,4 +5,7 @@ config/*
 !downloads/
 downloads/*
 !downloads/.gitignore
+!watch/
+watch/*
+!watch/.gitignore
 !.gitignore
