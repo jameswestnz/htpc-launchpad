@@ -90,6 +90,23 @@ services:
       - traefik.http.routers.radarr.rule=Host(`radarr.${TRAEFIK_IP_ADDRESS:-172.50.0.1}.nip.io`)
       - traefik.http.routers.radarr.service=radarr
 
+  overseerr:
+    image: ghcr.io/linuxserver/overseerr:latest
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Pacific/Auckland
+    volumes:
+      - ./data/overseerr/config:/config
+    ports:
+      - 5055:5055
+    restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.overseerr.loadbalancer.server.port=5055
+      - traefik.http.routers.overseerr.rule=Host(`overseerr.${TRAEFIK_IP_ADDRESS:-172.50.0.1}.nip.io`)
+      - traefik.http.routers.overseerr.service=overseerr
+
   tailscale:
     image: fastandfearless/tailscale:fromsource-latest
     sysctls:
