@@ -1,0 +1,5 @@
+*
+!.gitignore
+!empty.env
+!linuxserver.env
+!*.default.env
