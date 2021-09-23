@@ -1,2 +1,6 @@
 *
-!.gitignore
+!blocklists/
+!custom-cont-init.d/
+!custom-services.d/
+!resume/
+!torrents/
